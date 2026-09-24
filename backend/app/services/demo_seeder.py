@@ -128,17 +128,16 @@ def seed_database(db: Session) -> bool:
     Clears existing records and seeds rich, realistic, internally consistent demo data.
     """
     try:
-        # Clear existing tables
+        # Clear existing demo records while preserving user-uploaded non-demo posts
         db.query(Alert).delete()
         db.query(NetworkEdge).delete()
         db.query(TrendMetric).delete()
         db.query(Topic).delete()
         db.query(DemographicResult).delete()
-        db.query(SentimentResult).delete()
+        db.query(SentimentResult).filter(SentimentResult.post.has(Post.is_demo == True)).delete(synchronize_session=False)
         db.query(Interaction).delete()
-        db.query(Comment).delete()
-        db.query(Post).delete()
-        db.query(User).delete()
+        db.query(Comment).filter(Comment.post.has(Post.is_demo == True)).delete(synchronize_session=False)
+        db.query(Post).filter(Post.is_demo == True).delete(synchronize_session=False)
         db.commit()
 
         # 1. Seed Users

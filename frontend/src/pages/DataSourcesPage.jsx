@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { GlassCard } from '../components/GlassCard';
 import { uploadPostsFile, triggerSeedDemo } from '../services/api';
-import { Database, Upload, CheckCircle2, RefreshCw, FileText, AlertCircle, Sparkles, Check, AlertTriangle } from 'lucide-react';
+import { Database, Upload, CheckCircle2, RefreshCw, FileText, AlertCircle, Sparkles } from 'lucide-react';
 
 export const DataSourcesPage = ({ onRefreshData }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
   const [seeding, setSeeding] = useState(false);
   const [seedMessage, setSeedMessage] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const sources = [
     { name: 'X (Twitter)', posts: 1420, users: 340, status: 'Active Ingestion', live: 'Demo Mode', color: 'indigo' },
@@ -17,8 +18,7 @@ export const DataSourcesPage = ({ onRefreshData }) => {
     { name: 'YouTube', posts: 410, users: 95, status: 'Active Ingestion', live: 'Demo Mode', color: 'emerald' },
   ];
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+  const processFile = async (file) => {
     if (!file) return;
 
     setUploading(true);
@@ -30,10 +30,40 @@ export const DataSourcesPage = ({ onRefreshData }) => {
     } catch (err) {
       setUploadStatus({ 
         type: 'error', 
-        text: err.response?.data?.detail || 'Failed to process file upload.' 
+        text: err.response?.data?.detail || err.message || 'Failed to process file upload.' 
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      processFile(file);
+    }
+    e.target.value = ''; // Reset input so same file can be re-selected
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      processFile(files[0]);
     }
   };
 
@@ -110,22 +140,31 @@ export const DataSourcesPage = ({ onRefreshData }) => {
         ))}
       </div>
 
-      {/* CSV / JSON Upload Section */}
-      <GlassCard className="p-8">
+      {/* CSV / JSON Drag & Drop Upload Section */}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`glass-panel p-8 rounded-2xl transition-all border-2 border-dashed ${
+          isDragging ? 'border-indigo-500 bg-indigo-500/10 scale-[1.01]' : 'border-white/10 hover:border-indigo-500/40'
+        }`}
+      >
         <div className="max-w-2xl mx-auto text-center space-y-4">
           <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mx-auto">
-            <Upload className="w-6 h-6" />
+            <Upload className={`w-6 h-6 ${isDragging ? 'animate-bounce' : ''}`} />
           </div>
 
-          <h3 className="text-lg font-bold text-white uppercase tracking-wide">DYNAMIC FILE INGESTION ENGINE</h3>
+          <h3 className="text-lg font-bold text-white uppercase tracking-wide">
+            {isDragging ? 'DROP YOUR CSV / JSON FILE HERE' : 'DYNAMIC FILE INGESTION ENGINE'}
+          </h3>
           <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-            Upload custom CSV or JSON datasets (supports <code className="text-indigo-300 font-mono">post_text</code>, <code className="text-indigo-300 font-mono">entity</code>, <code className="text-indigo-300 font-mono">entity_type</code>, <code className="text-indigo-300 font-mono">hashtags</code>, <code className="text-indigo-300 font-mono">likes</code>, <code className="text-indigo-300 font-mono">sentiment</code>).
+            Drag and drop or select custom CSV/JSON files (supports <code className="text-indigo-300 font-mono">post_text</code>, <code className="text-indigo-300 font-mono">entity</code>, <code className="text-indigo-300 font-mono">entity_type</code>, <code className="text-indigo-300 font-mono">hashtags</code>, <code className="text-indigo-300 font-mono">likes</code>, <code className="text-indigo-300 font-mono">sentiment</code>).
           </p>
 
           <label className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-indigo-600/30 cursor-pointer transition-all">
             <FileText className="w-4 h-4" />
             <span>{uploading ? 'PROCESSING & VALIDATING FILE...' : 'SELECT CSV / JSON FILE'}</span>
-            <input type="file" accept=".csv,.json" onChange={handleFileUpload} disabled={uploading} className="hidden" />
+            <input type="file" accept=".csv,.json,.txt" onChange={handleFileChange} disabled={uploading} className="hidden" />
           </label>
 
           {/* Upload Results Validation Logging */}
@@ -173,7 +212,7 @@ export const DataSourcesPage = ({ onRefreshData }) => {
             </div>
           )}
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 };

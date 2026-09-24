@@ -60,18 +60,33 @@ def process_posts_ingestion(file_contents: bytes, filename: str, db: Session) ->
 
     # 1. Parse File Content
     try:
-        if filename_lower.endswith(".json"):
-            decoded = file_contents.decode("utf-8-sig")
-            parsed = json.loads(decoded)
-            if isinstance(parsed, list):
-                raw_items = parsed
-            elif isinstance(parsed, dict) and "posts" in parsed:
-                raw_items = parsed["posts"]
-            elif isinstance(parsed, dict):
-                raw_items = [parsed]
-        else:  # Assume CSV
-            decoded = file_contents.decode("utf-8-sig")
-            reader = csv.DictReader(io.StringIO(decoded))
+        try:
+            decoded = file_contents.decode("utf-8-sig", errors="replace")
+        except Exception:
+            decoded = file_contents.decode("latin-1", errors="replace")
+
+        if filename_lower.endswith(".json") or decoded.strip().startswith("[") or decoded.strip().startswith("{"):
+            try:
+                parsed = json.loads(decoded)
+                if isinstance(parsed, list):
+                    raw_items = parsed
+                elif isinstance(parsed, dict) and "posts" in parsed:
+                    raw_items = parsed["posts"]
+                elif isinstance(parsed, dict):
+                    raw_items = [parsed]
+            except Exception:
+                pass
+
+        if not raw_items:  # Assume CSV or Delimited text
+            # Detect delimiter
+            sample = decoded[:4096]
+            delimiter = ","
+            if ";" in sample and sample.count(";") > sample.count(","):
+                delimiter = ";"
+            elif "\t" in sample and sample.count("\t") > sample.count(","):
+                delimiter = "\t"
+
+            reader = csv.DictReader(io.StringIO(decoded), delimiter=delimiter)
             raw_items = list(reader)
     except Exception as ex:
         return {
