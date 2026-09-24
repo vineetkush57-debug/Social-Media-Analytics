@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: sih_sma_postgres
+    environment:
+      POSTGRES_USER: sih_user
+      POSTGRES_PASSWORD: sih_password
+      POSTGRES_DB: sih_social_analytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: sih_sma_backend
+    environment:
+      DATABASE_URL: postgresql://sih_user:sih_password@postgres:5432/sih_social_analytics
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sih_sma_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
