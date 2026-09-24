@@ -6,7 +6,14 @@ from sqlalchemy.orm import Session
 from backend.app.database.models import Post, User, SentimentResult, Topic, TrendMetric, NetworkEdge, DemographicResult
 from backend.app.services.ai_sentiment import analyze_post_sentiment
 
-def detect_entity_type(query: str) -> str:
+def detect_entity_type(query: str, posts: List[Post] = None) -> str:
+    if posts:
+        for p in posts:
+            if p.entity_type:
+                et = p.entity_type.strip().title()
+                if et in ["Person", "Brand", "Organization", "Event", "Product", "Hashtag", "Topic"]:
+                    return et
+
     q = query.strip().lower()
     if q.startswith("#"):
         return "Hashtag"
@@ -35,26 +42,30 @@ def detect_entity_type(query: str) -> str:
 def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
     """
     Generates a complete Entity Intelligence payload for any query.
-    Grounded in actual database posts if available, with consistent demo signal synthesis if required.
+    Grounded in actual database posts if available, supporting both uploaded dataset records and seeded data.
     """
     clean_q = query.strip()
     q_lower = f"%{clean_q.lower()}%"
-    entity_type = detect_entity_type(clean_q)
 
-    # Search DB posts matching entity
+    # Search DB posts matching entity across content, topic_name, entity_name, entity_type, hashtags
     matching_posts = db.query(Post).filter(
         Post.content.ilike(q_lower) | 
         Post.topic_name.ilike(q_lower) |
-        Post.platform.ilike(q_lower)
-    ).all()
+        Post.entity_name.ilike(q_lower) |
+        Post.entity_type.ilike(q_lower) |
+        Post.hashtags.ilike(q_lower)
+    ).order_by(Post.timestamp.desc()).all()
 
-    # If DB has posts, calculate real numbers
+    entity_type = detect_entity_type(clean_q, matching_posts)
+
+    # Check if data is purely demo data or uploaded real dataset
     if matching_posts:
-        total_mentions = len(matching_posts) * 340 + random.randint(120, 850)
+        is_demo_mode = all(p.is_demo for p in matching_posts)
+        total_mentions = len(matching_posts)
         likes = sum(p.likes_count for p in matching_posts)
         shares = sum(p.shares_count for p in matching_posts)
         replies = sum(p.replies_count for p in matching_posts)
-        views = sum(p.views_count for p in matching_posts) or (likes * 14 + 5000)
+        views = sum(p.views_count for p in matching_posts)
 
         platform_counts = {}
         for p in matching_posts:
@@ -63,6 +74,15 @@ def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
         pos_cnt = sum(1 for p in matching_posts if p.sentiment and p.sentiment.sentiment == 'positive')
         neu_cnt = sum(1 for p in matching_posts if p.sentiment and p.sentiment.sentiment == 'neutral')
         neg_cnt = sum(1 for p in matching_posts if p.sentiment and p.sentiment.sentiment == 'negative')
+
+        # Fallback if no sentiment record attached yet
+        if pos_cnt == 0 and neu_cnt == 0 and neg_cnt == 0:
+            pos_cnt = max(1, int(total_mentions * 0.6))
+            neu_cnt = int(total_mentions * 0.3)
+            neg_cnt = max(0, total_mentions - pos_cnt - neu_cnt)
+
+        first_detected = matching_posts[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
+        last_detected = matching_posts[0].timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
 
         recent_posts_list = [
             {
@@ -73,10 +93,11 @@ def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
                 "likes": p.likes_count,
                 "timestamp": p.timestamp.strftime("%Y-%m-%d %H:%M"),
                 "sentiment": p.sentiment.sentiment if p.sentiment else "positive"
-            } for p in matching_posts[:6]
+            } for p in matching_posts[:8]
         ]
     else:
-        # Grounded fallback for search terms like "Virat Kohli", "Google", "IPL"
+        # Fallback consistent demo baseline when search query has no matching uploaded records
+        is_demo_mode = True
         total_mentions = random.randint(4800, 18500)
         likes = total_mentions * random.randint(5, 12)
         shares = int(likes * 0.28)
@@ -84,6 +105,8 @@ def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
         views = likes * 18
         platform_counts = {"X": 45, "Telegram": 20, "Instagram": 25, "Reddit": 15, "YouTube": 10}
         pos_cnt, neu_cnt, neg_cnt = int(total_mentions * 0.65), int(total_mentions * 0.25), int(total_mentions * 0.10)
+        first_detected = "2026-09-24 08:00:00 UTC"
+        last_detected = "2026-09-24 20:15:00 UTC"
         recent_posts_list = [
             {
                 "id": 901,
@@ -102,28 +125,19 @@ def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
                 "likes": 1890,
                 "timestamp": "2026-09-24 16:15",
                 "sentiment": "positive"
-            },
-            {
-                "id": 903,
-                "user": "CommunityPulse",
-                "platform": "Reddit",
-                "content": f"Community megathread: What are your thoughts on recent developments with {clean_q}? Over 1,200 comments active.",
-                "likes": 2150,
-                "timestamp": "2026-09-24 14:00",
-                "sentiment": "neutral"
             }
         ]
 
     # Calculate Engagement rate
     total_interactions = likes + shares + replies
-    engagement_rate = round((total_interactions / max(1, views)) * 100, 2)
+    engagement_rate = round((total_interactions / max(1, views or total_interactions * 10)) * 100, 2)
 
     # Platform percentage distribution
     p_total = sum(platform_counts.values()) or 1
     platforms_dist = {k: round((v / p_total) * 100, 1) for k, v in platform_counts.items()}
 
     # Related Entities Generation based on Entity Type
-    if entity_type == "Person" or "kohli" in q_lower:
+    if entity_type == "Person" or "kohli" in clean_q.lower():
         related_entities = [
             {"name": "Rohit Sharma", "type": "Person", "relationship": "Teammate / Captain", "relevance": 94},
             {"name": "Royal Challengers Bengaluru", "type": "Organization", "relationship": "Franchise Team", "relevance": 91},
@@ -134,13 +148,13 @@ def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
         ]
         rising_keywords = ["masterclass", "century", "chase master", "fitness", "captaincy", "record-breaker"]
         related_hashtags = ["#ViratKohli", "#KingKohli", "#TeamIndia", "#Cricket", "#IPL2026", "#PumaAthlete"]
-    elif entity_type == "Brand" or "puma" in q_lower or "google" in q_lower:
+    elif entity_type == "Brand" or "puma" in clean_q.lower() or "google" in clean_q.lower():
         related_entities = [
             {"name": "Nike", "type": "Brand", "relationship": "Market Competitor", "relevance": 92},
             {"name": "Virat Kohli", "type": "Person", "relationship": "Global Brand Ambassador", "relevance": 95},
             {"name": "Athleisure Tech", "type": "Product", "relationship": "Product Line", "relevance": 84},
             {"name": "SIH 2026 Innovation", "type": "Event", "relationship": "Sponsorship", "relevance": 78},
-            {"name": "#ForeverFaster", "type": "Hashtag", "relationship": "Brand Campaign", "relevance": 89}
+            {"name": f"#{clean_q.replace(' ', '')}", "type": "Hashtag", "relationship": "Brand Campaign", "relevance": 89}
         ]
         rising_keywords = ["campaign", "ambassador", "quarterly growth", "sustainability", "flagship release"]
         related_hashtags = [f"#{clean_q.replace(' ', '')}", "#BrandIntelligence", "#GlobalMarket", "#RetailTech"]
@@ -170,39 +184,40 @@ def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
             "time": "09:15 AM",
             "event_type": "Mention Volume Spike",
             "description": f"Initial surge in online activity mentioning {clean_q} detected across Telegram research channels.",
-            "reach": 42000
+            "reach": max(12000, total_mentions * 5)
         },
         {
             "time": "10:45 AM",
             "event_type": "New Sub-Topic Identified",
             "description": f"Natural language clustering isolated key narrative discussions around {rising_keywords[0]} and {rising_keywords[1]}.",
-            "reach": 185000
+            "reach": max(45000, total_mentions * 18)
         },
         {
             "time": "01:20 PM",
             "event_type": "Influencer Amplification",
             "description": "High-influence account published high-engagement commentary triggering cross-platform virality.",
-            "reach": 640000
+            "reach": max(180000, total_mentions * 45)
         },
         {
             "time": "03:45 PM",
             "event_type": "Peak Engagement Wave",
-            "description": "Reddit and X community discussions peaked with over 1,800 active replies per hour.",
-            "reach": 1250000
+            "description": "Community discussions peaked with active engagement across social networks.",
+            "reach": max(350000, total_mentions * 80)
         }
     ]
 
     # Executive AI Summary
+    data_source_label = "simulated demo signals" if is_demo_mode else "uploaded database records"
     ai_summary = (
-        f"Public discussion around '{clean_q}' ({entity_type}) experienced a significant {min(340, random.randint(140, 290))}% volume escalation during the analyzed period. "
+        f"Public discussion around '{clean_q}' ({entity_type}) comprises {total_mentions:,} total posts indexed from {data_source_label}. "
         f"Overall sentiment remains predominantly {('positive' if pos_cnt >= neg_cnt else 'critical')} ({(pos_cnt / max(1, pos_cnt+neu_cnt+neg_cnt))*100:.1f}% positive rating). "
-        f"Primary narrative drivers revolve around '{rising_keywords[0]}' and '{rising_keywords[1]}', with major virality amplified via {related_entities[0]['name']} across X and Telegram."
+        f"Primary narrative drivers revolve around '{rising_keywords[0]}' and '{rising_keywords[1]}', with major virality amplified via {related_entities[0]['name']} across {list(platforms_dist.keys())[0] if platforms_dist else 'X'}."
     )
 
     return {
         "query": clean_q,
         "entity_type": entity_type,
-        "is_demo_mode": True,
+        "is_demo_mode": is_demo_mode,
         "overview": {
             "total_mentions": total_mentions,
             "likes_count": likes,
@@ -211,8 +226,8 @@ def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
             "views_count": views,
             "engagement_rate": engagement_rate,
             "platforms": platforms_dist,
-            "first_detected": "2026-09-24 08:00 AM UTC",
-            "last_detected": "2026-09-24 08:15 PM UTC"
+            "first_detected": first_detected,
+            "last_detected": last_detected
         },
         "sentiment": {
             "positive": pos_cnt,
@@ -246,9 +261,9 @@ def generate_entity_intelligence(query: str, db: Session) -> Dict[str, Any]:
                 {"handle": "DevPulse_HQ", "platform": "X", "score": 91.0},
                 {"handle": "TechResearchLab", "platform": "Telegram", "score": 82.0}
             ],
-            "influential_nodes": 18,
+            "influential_nodes": max(5, total_mentions // 10),
             "communities_count": 5,
-            "propagation_summary": f"Origin on Telegram -> Amplification on X -> Community discussion on Reddit -> Media coverage on YouTube."
+            "propagation_summary": "Origin on Telegram -> Amplification on X -> Community discussion on Reddit -> Media coverage on YouTube."
         },
         "timeline_spikes": timeline_spikes,
         "related_entities": related_entities,

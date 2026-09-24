@@ -22,6 +22,7 @@ export function App() {
   const [entityQuery, setEntityQuery] = useState('Virat Kohli');
   const [selectedPlatform, setSelectedPlatform] = useState('all');
   const [dateRange, setDateRange] = useState('24h');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSihDemoOpen, setIsSihDemoOpen] = useState(false);
@@ -37,6 +38,10 @@ export function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const handleGlobalRefresh = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
 
   const navigateTo = (path, extraQuery = '') => {
     if (extraQuery) setEntityQuery(extraQuery);
@@ -54,37 +59,38 @@ export function App() {
   const renderContent = () => {
     switch (currentRoute) {
       case '/':
-        return <LandingPage navigateTo={navigateTo} onStartSihDemo={() => setIsSihDemoOpen(true)} />;
+        return <LandingPage key={refreshKey} navigateTo={navigateTo} onStartSihDemo={() => setIsSihDemoOpen(true)} />;
       case '/dashboard':
-        return <DashboardPage navigateTo={navigateTo} />;
+        return <DashboardPage key={refreshKey} navigateTo={navigateTo} />;
       case '/entity':
         return (
           <EntityDashboardPage
+            key={refreshKey}
             entityQuery={entityQuery}
             navigateTo={navigateTo}
             onSearchEntity={handleSearchEntity}
           />
         );
       case '/sources':
-        return <DataSourcesPage onRefreshData={() => {}} />;
+        return <DataSourcesPage key={refreshKey} onRefreshData={handleGlobalRefresh} />;
       case '/sentiment':
-        return <SentimentPage />;
+        return <SentimentPage key={refreshKey} />;
       case '/demographics':
-        return <DemographicsPage />;
+        return <DemographicsPage key={refreshKey} />;
       case '/trends':
-        return <TrendsPage />;
+        return <TrendsPage key={refreshKey} />;
       case '/network':
-        return <NetworkPage />;
+        return <NetworkPage key={refreshKey} />;
       case '/propagation':
-        return <PropagationPage />;
+        return <PropagationPage key={refreshKey} />;
       case '/timeline':
-        return <TimelinePage />;
+        return <TimelinePage key={refreshKey} />;
       case '/alerts':
-        return <AlertsPage />;
+        return <AlertsPage key={refreshKey} />;
       case '/architecture':
-        return <ArchitecturePage />;
+        return <ArchitecturePage key={refreshKey} />;
       default:
-        return <DashboardPage navigateTo={navigateTo} />;
+        return <DashboardPage key={refreshKey} navigateTo={navigateTo} />;
     }
   };
 
@@ -122,7 +128,7 @@ export function App() {
         setDateRange={setDateRange}
         onOpenSearch={() => setIsSearchOpen(true)}
         onStartSihDemo={() => setIsSihDemoOpen(true)}
-        onRefreshData={() => {}}
+        onRefreshData={handleGlobalRefresh}
       />
 
       {/* Workspace Main Content View */}

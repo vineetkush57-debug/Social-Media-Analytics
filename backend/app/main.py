@@ -2,11 +2,12 @@ import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.database.session import engine, Base, SessionLocal
+from backend.app.database.session import engine, Base, SessionLocal, migrate_db_columns
 from backend.app.api.routes import router
 from backend.app.services.demo_seeder import seed_database
 
-# Create database tables
+# Apply column migrations & create tables
+migrate_db_columns()
 Base.metadata.create_all(bind=engine)
 
 # Auto-seed if database is freshly created

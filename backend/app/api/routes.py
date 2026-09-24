@@ -19,6 +19,7 @@ from backend.app.services.network_analytics import compute_network_graph
 from backend.app.services.propagation_service import trace_information_propagation
 from backend.app.services.demo_seeder import seed_database
 from backend.app.services.entity_service import generate_entity_intelligence
+from backend.app.services.ingestion_service import process_posts_ingestion
 
 router = APIRouter(prefix="/api")
 
@@ -139,66 +140,14 @@ def get_posts(skip: int = 0, limit: int = 20, platform: Optional[str] = None, db
 async def upload_posts_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """
     Accepts CSV or JSON upload of social media posts, runs sentiment AI, and stores in database.
+    Supports post_text, content, text, message, entity, entity_type, hashtags, likes, comments, etc.
     """
     contents = await file.read()
-    filename = file.filename.lower()
-    items = []
-
-    try:
-        if filename.endswith(".json"):
-            items = json.loads(contents.decode("utf-8"))
-        elif filename.endswith(".csv"):
-            import io, csv
-            decoded = contents.decode("utf-8")
-            reader = csv.DictReader(io.StringIO(decoded))
-            for row in reader:
-                items.append(row)
-        else:
-            raise HTTPException(status_code=400, detail="File format not supported. Upload CSV or JSON.")
-
-        added_count = 0
-        default_user = db.query(User).first()
-
-        for item in items:
-            text = item.get("content") or item.get("text") or item.get("post")
-            if not text:
-                continue
-
-            platform = item.get("platform", "X")
-            topic = item.get("topic") or item.get("topic_name") or "Custom Upload"
-
-            post = Post(
-                user_id=default_user.id if default_user else 1,
-                platform=platform,
-                content=text,
-                likes_count=int(item.get("likes", random.randint(10, 500))),
-                topic_name=topic,
-                is_demo=False
-            )
-            db.add(post)
-            db.flush()
-
-            sent_res = analyze_post_sentiment(text)
-            sentiment_obj = SentimentResult(
-                post_id=post.id,
-                sentiment=sent_res["sentiment"],
-                confidence=sent_res["confidence"],
-                excitement=sent_res["excitement"],
-                anxiety=sent_res["anxiety"],
-                anger=sent_res["anger"],
-                supportive=sent_res["supportive"],
-                against=sent_res["against"],
-                sarcasm=sent_res["sarcasm"],
-                primary_emotion=sent_res["primary_emotion"]
-            )
-            db.add(sentiment_obj)
-            added_count += 1
-
-        db.commit()
-        return {"status": "success", "message": f"Successfully ingested {added_count} posts and analyzed sentiment."}
-    except Exception as ex:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error processing upload: {str(ex)}")
+    filename = file.filename or "upload.csv"
+    res = process_posts_ingestion(contents, filename, db)
+    if res.get("status") == "error":
+        raise HTTPException(status_code=400, detail=res.get("message"))
+    return res
 
 @router.get("/sentiment")
 def get_sentiment_analytics(db: Session = Depends(get_db)):

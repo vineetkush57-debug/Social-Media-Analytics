@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GlassCard } from '../components/GlassCard';
 import { uploadPostsFile, triggerSeedDemo } from '../services/api';
-import { Database, Upload, CheckCircle2, RefreshCw, FileText, AlertCircle, Sparkles } from 'lucide-react';
+import { Database, Upload, CheckCircle2, RefreshCw, FileText, AlertCircle, Sparkles, Check, AlertTriangle } from 'lucide-react';
 
 export const DataSourcesPage = ({ onRefreshData }) => {
   const [uploading, setUploading] = useState(false);
@@ -25,10 +25,13 @@ export const DataSourcesPage = ({ onRefreshData }) => {
     setUploadStatus(null);
     try {
       const res = await uploadPostsFile(file);
-      setUploadStatus({ type: 'success', text: res.message });
+      setUploadStatus({ type: 'success', data: res });
       if (onRefreshData) onRefreshData();
     } catch (err) {
-      setUploadStatus({ type: 'error', text: err.response?.data?.detail || 'Failed to process file upload.' });
+      setUploadStatus({ 
+        type: 'error', 
+        text: err.response?.data?.detail || 'Failed to process file upload.' 
+      });
     } finally {
       setUploading(false);
     }
@@ -114,23 +117,59 @@ export const DataSourcesPage = ({ onRefreshData }) => {
             <Upload className="w-6 h-6" />
           </div>
 
-          <h3 className="text-lg font-bold text-white uppercase tracking-wide">DYNAMIC FILE INGESTION</h3>
+          <h3 className="text-lg font-bold text-white uppercase tracking-wide">DYNAMIC FILE INGESTION ENGINE</h3>
           <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-            Upload custom social media post datasets in CSV or JSON format to run immediate AI sentiment classification and network extraction.
+            Upload custom CSV or JSON datasets (supports <code className="text-indigo-300 font-mono">post_text</code>, <code className="text-indigo-300 font-mono">entity</code>, <code className="text-indigo-300 font-mono">entity_type</code>, <code className="text-indigo-300 font-mono">hashtags</code>, <code className="text-indigo-300 font-mono">likes</code>, <code className="text-indigo-300 font-mono">sentiment</code>).
           </p>
 
           <label className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider shadow-xl shadow-indigo-600/30 cursor-pointer transition-all">
             <FileText className="w-4 h-4" />
-            <span>{uploading ? 'PROCESSING FILE...' : 'SELECT CSV / JSON FILE'}</span>
+            <span>{uploading ? 'PROCESSING & VALIDATING FILE...' : 'SELECT CSV / JSON FILE'}</span>
             <input type="file" accept=".csv,.json" onChange={handleFileUpload} disabled={uploading} className="hidden" />
           </label>
 
+          {/* Upload Results Validation Logging */}
           {uploadStatus && (
-            <div className={`mt-4 p-3 rounded-lg text-xs font-semibold inline-flex items-center space-x-2 ${
-              uploadStatus.type === 'success' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
-            }`}>
-              {uploadStatus.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-              <span>{uploadStatus.text}</span>
+            <div className="mt-6 text-left space-y-3">
+              {uploadStatus.type === 'success' ? (
+                <div className="p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
+                  <div className="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>{uploadStatus.data.message}</span>
+                  </div>
+
+                  {/* Diagnostic Counts Grid */}
+                  <div className="grid grid-cols-4 gap-2 text-center text-xs pt-2 border-t border-emerald-500/20 font-mono">
+                    <div className="p-2 rounded bg-black/20">
+                      <span className="text-[10px] text-slate-400 block uppercase font-sans">Rows Read</span>
+                      <strong className="text-white">{uploadStatus.data.rows_read}</strong>
+                    </div>
+                    <div className="p-2 rounded bg-black/20">
+                      <span className="text-[10px] text-slate-400 block uppercase font-sans">Valid Content</span>
+                      <strong className="text-cyan-400">{uploadStatus.data.rows_valid}</strong>
+                    </div>
+                    <div className="p-2 rounded bg-black/20">
+                      <span className="text-[10px] text-emerald-400 block uppercase font-sans">Inserted DB</span>
+                      <strong className="text-emerald-400 font-bold">{uploadStatus.data.rows_inserted}</strong>
+                    </div>
+                    <div className="p-2 rounded bg-black/20">
+                      <span className="text-[10px] text-slate-400 block uppercase font-sans">Skipped</span>
+                      <strong className="text-amber-400">{uploadStatus.data.rows_skipped}</strong>
+                    </div>
+                  </div>
+
+                  {uploadStatus.data.rows_skipped > 0 && uploadStatus.data.skip_reasons && (
+                    <div className="text-[11px] text-amber-300 font-mono">
+                      Skip reasons: {JSON.stringify(uploadStatus.data.skip_reasons)}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs font-semibold text-rose-300 flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{uploadStatus.text}</span>
+                </div>
+              )}
             </div>
           )}
         </div>

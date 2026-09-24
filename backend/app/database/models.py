@@ -36,6 +36,9 @@ class Post(Base):
     url = Column(String, nullable=True)
     language = Column(String, default="en")
     topic_name = Column(String, index=True, nullable=True)
+    entity_name = Column(String, index=True, nullable=True)
+    entity_type = Column(String, index=True, nullable=True)
+    hashtags = Column(Text, nullable=True)
     is_demo = Column(Boolean, default=True)
 
     user = relationship("User", back_populates="posts")
