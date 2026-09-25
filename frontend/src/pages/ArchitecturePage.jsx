@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { GlassCard } from '../components/GlassCard';
-import { Cpu, Database, Server, Layout, Smile, Users, TrendingUp, Network, ArrowRight, ShieldCheck } from 'lucide-react';
+import { fetchAuditTrail } from '../services/api';
+import { Cpu, Database, Server, Layout, Smile, Users, TrendingUp, Network, ArrowRight, ShieldCheck, Lock, Hash, CheckCircle2 } from 'lucide-react';
 
 export const ArchitecturePage = () => {
+  const [auditLog, setAuditLog] = useState([]);
+  const [loadingAudit, setLoadingAudit] = useState(true);
+
+  useEffect(() => {
+    fetchAuditTrail()
+      .then((data) => {
+        setAuditLog(data || []);
+      })
+      .catch((err) => {
+        console.error('Failed to load audit trail:', err);
+      })
+      .finally(() => setLoadingAudit(false));
+  }, []);
+
   return (
     <div className="p-8 space-y-8 max-w-[1600px] mx-auto select-none">
       {/* Title */}
@@ -137,6 +152,69 @@ export const ArchitecturePage = () => {
           </GlassCard>
         </div>
       </div>
+
+      {/* OSINT Audit Trail & Data Provenance Ledger */}
+      <GlassCard className="p-6 space-y-4 border border-indigo-500/20">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                OSINT AUDIT TRAIL & DATA PROVENANCE LEDGER
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Immutable cryptographic ledger recording data provenance, collector agent IDs, and SHA-256 integrity hashes.
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-mono text-emerald-400 flex items-center space-x-1 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>LEDGER IMMUTABLE</span>
+          </span>
+        </div>
+
+        {loadingAudit ? (
+          <div className="p-4 text-xs font-mono text-slate-400 animate-pulse text-center">
+            Fetching cryptographic audit trail...
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead>
+                <tr className="text-[10px] text-slate-400 border-b border-white/10 uppercase">
+                  <th className="py-2.5 px-3">Audit Event</th>
+                  <th className="py-2.5 px-3">Timestamp</th>
+                  <th className="py-2.5 px-3">Collector Agent</th>
+                  <th className="py-2.5 px-3">Data Provenance</th>
+                  <th className="py-2.5 px-3">SHA256 Hash Checksum</th>
+                  <th className="py-2.5 px-3 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {auditLog.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-white/[0.02]">
+                    <td className="py-2.5 px-3 font-semibold text-white">{row.action}</td>
+                    <td className="py-2.5 px-3 text-slate-400 text-[11px]">{new Date(row.timestamp * 1000).toLocaleString()}</td>
+                    <td className="py-2.5 px-3 text-cyan-400">{row.collector_agent}</td>
+                    <td className="py-2.5 px-3 text-slate-300">{row.provenance}</td>
+                    <td className="py-2.5 px-3 text-indigo-300 font-mono text-[10px] truncate max-w-[200px]" title={row.sha256_hash}>
+                      {row.sha256_hash}
+                    </td>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-[10px]">
+                        {row.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </GlassCard>
     </div>
   );
 };
+

@@ -22,6 +22,10 @@ from backend.app.services.entity_service import generate_entity_intelligence
 from backend.app.services.ingestion_service import process_posts_ingestion
 from backend.app.config import get_system_mode_status, is_valid_key, X_BEARER_TOKEN
 from backend.app.services.live_api_service import ingest_live_tweets_to_db
+from backend.app.services.explainability_service import generate_ai_reasoning
+from backend.app.services.telegram_service import ingest_telegram_channel
+from backend.app.services.report_generator import generate_pdf_summary_report
+from backend.app.services.audit_service import get_osint_audit_trail
 
 router = APIRouter(prefix="/api")
 
@@ -445,3 +449,55 @@ def get_entity_intelligence(query: str, db: Session = Depends(get_db)):
     if not query or not query.strip():
         raise HTTPException(status_code=400, detail="Entity query string cannot be empty.")
     return generate_entity_intelligence(query, db)
+
+@router.get("/explainability/{insight_type}/{item_id}")
+def get_explainable_ai_reasoning(insight_type: str, item_id: str):
+    """Returns XAI model explainability chain, feature weights, and data provenance."""
+    return generate_ai_reasoning(insight_type, item_id)
+
+@router.post("/sources/telegram-ingest")
+def trigger_telegram_ingestion(channel_handle: str = "@TechResearchLab", count: int = 5, db: Session = Depends(get_db)):
+    """Simulates/executes Telethon public Telegram channel dispatches ingestion."""
+    return ingest_telegram_channel(channel_handle, db, count)
+
+@router.post("/sentiment/analyze-text")
+def analyze_custom_text_nlu(payload: dict):
+    """Interactive Sarcasm & Stance NLU Tester."""
+    text = payload.get("text", "")
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="Text payload cannot be empty.")
+    analysis = analyze_post_sentiment(text)
+    
+    # Calculate Stance
+    positive_val = analysis["excitement"] + analysis["supportive"]
+    negative_val = analysis["anger"] + analysis["against"]
+    stance = "FOR / SUPPORTIVE" if positive_val > negative_val else ("AGAINST / CRITICAL" if negative_val > positive_val else "NEUTRAL")
+    sarcasm_score = round(analysis["sarcasm"] * 100, 1)
+
+    return {
+        "text": text,
+        "sentiment": analysis["sentiment"],
+        "confidence": analysis["confidence"],
+        "stance": stance,
+        "sarcasm_score_pct": sarcasm_score,
+        "primary_emotion": analysis["primary_emotion"],
+        "emotions": {
+            "Excitement": analysis["excitement"],
+            "Anxiety": analysis["anxiety"],
+            "Anger": analysis["anger"],
+            "Supportive": analysis["supportive"],
+            "Against": analysis["against"],
+            "Sarcasm": analysis["sarcasm"]
+        },
+        "explainability": f"Classified with {round(analysis['confidence']*100)}% confidence based on emotional intensity and stance signals."
+    }
+
+@router.get("/export/pdf-report")
+def export_pdf_executive_report(db: Session = Depends(get_db)):
+    """Generates executive summary PDF report payload & HTML template."""
+    return generate_pdf_summary_report(db)
+
+@router.get("/audit-trail")
+def get_osint_data_provenance(db: Session = Depends(get_db)):
+    """Returns OSINT Security Audit Trail and Data Provenance Log."""
+    return get_osint_audit_trail(db)

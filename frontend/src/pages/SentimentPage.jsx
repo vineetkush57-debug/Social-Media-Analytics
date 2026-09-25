@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { GlassCard } from '../components/GlassCard';
-import { fetchSentiment } from '../services/api';
-import { Smile, Frown, Meh, Sparkles, Brain, CheckCircle2 } from 'lucide-react';
+import { fetchSentiment, analyzeCustomTextNLU } from '../services/api';
+import { ExplainabilityModal } from '../components/ExplainabilityModal';
+import { Smile, Frown, Meh, Sparkles, Brain, CheckCircle2, Send, Zap, HelpCircle } from 'lucide-react';
 import { 
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area 
 } from 'recharts';
@@ -10,12 +11,40 @@ export const SentimentPage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Stance & Sarcasm Tester State
+  const [customText, setCustomText] = useState('');
+  const [testResult, setTestResult] = useState(null);
+  const [testingNlu, setTestingNlu] = useState(false);
+
+  // XAI Modal State
+  const [isXaiOpen, setIsXaiOpen] = useState(false);
+  const [selectedInsight, setSelectedInsight] = useState({ type: 'sentiment', id: 'global' });
+
   useEffect(() => {
     fetchSentiment()
       .then((res) => setData(res))
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleTestNlu = async (e) => {
+    e.preventDefault();
+    if (!customText.trim()) return;
+    setTestingNlu(true);
+    try {
+      const res = await analyzeCustomTextNLU(customText);
+      setTestResult(res);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTestingNlu(false);
+    }
+  };
+
+  const handleInspectReasoning = (type, id) => {
+    setSelectedInsight({ type, id });
+    setIsXaiOpen(true);
+  };
 
   if (loading) {
     return <div className="p-8 text-xs text-slate-400 animate-pulse">Loading AI Sentiment Intelligence...</div>;
@@ -46,15 +75,76 @@ export const SentimentPage = () => {
             SENTIMENT & EMOTION INTELLIGENCE
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Deep neural classification of polarity, confidence, and emotional intensity across social media streams.
+            Deep neural classification of polarity, confidence, sarcasm, stance, and emotional intensity.
           </p>
         </div>
 
-        <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span>AI-GENERATED ESTIMATES</span>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => handleInspectReasoning('sentiment', 'global_overview')}
+            className="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 text-xs font-semibold transition-all"
+          >
+            <Brain className="w-4 h-4 text-purple-400" />
+            <span>🧠 Inspect AI Reasoning</span>
+          </button>
+
+          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <span>AI-GENERATED ESTIMATES</span>
+          </div>
         </div>
       </div>
+
+      {/* Interactive Stance & Sarcasm NLU Tester Card */}
+      <GlassCard className="border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-950/30 to-indigo-950/30">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <Zap className="w-4 h-4 text-purple-400" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+              INTERACTIVE STANCE & SARCASM NLU TESTER
+            </h3>
+          </div>
+          <span className="text-[10px] text-purple-300 font-mono">LIVE INFERENCE ENGINE</span>
+        </div>
+
+        <form onSubmit={handleTestNlu} className="flex gap-3 mb-4">
+          <input
+            type="text"
+            value={customText}
+            onChange={(e) => setCustomText(e.target.value)}
+            placeholder="Type any tweet or statement to test Sarcasm & Stance (e.g. 'Oh brilliant, another software update breaking everything...')..."
+            className="flex-1 px-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500/60"
+          />
+          <button
+            type="submit"
+            disabled={testingNlu || !customText.trim()}
+            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold uppercase tracking-wider disabled:opacity-50 flex items-center space-x-2"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>{testingNlu ? 'Analyzing...' : 'Test NLU'}</span>
+          </button>
+        </form>
+
+        {testResult && (
+          <div className="p-4 rounded-xl bg-black/40 border border-purple-500/30 space-y-3 animate-fade-in">
+            <div className="flex flex-wrap items-center justify-between text-xs border-b border-white/10 pb-2">
+              <div>
+                <span className="text-slate-400">Target Stance: </span>
+                <strong className="text-indigo-300 font-bold ml-1">{testResult.stance}</strong>
+              </div>
+              <div>
+                <span className="text-slate-400">Sarcasm Probability: </span>
+                <strong className="text-amber-400 font-mono font-bold ml-1">{testResult.sarcasm_score_pct}%</strong>
+              </div>
+              <div>
+                <span className="text-slate-400">Primary Emotion: </span>
+                <strong className="text-purple-300 font-bold ml-1">{testResult.primary_emotion}</strong>
+              </div>
+            </div>
+            <p className="text-xs text-slate-300 italic">"{testResult.explainability}"</p>
+          </div>
+        )}
+      </GlassCard>
 
       {/* Top Polarity Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

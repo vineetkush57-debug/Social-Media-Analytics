@@ -33,5 +33,12 @@ export const fetchAlerts = async (severity = 'all') => (await api.get(`/alerts?s
 export const triggerSeedDemo = async () => (await api.post('/demo/seed')).data;
 export const globalSearch = async (query) => (await api.get(`/search?query=${encodeURIComponent(query)}`)).data;
 export const fetchEntityIntelligence = async (query) => (await api.get(`/entity/${encodeURIComponent(query)}`)).data;
+export const fetchExplainability = async (insightType, itemId) => 
+  (await api.get(`/explainability/${encodeURIComponent(insightType)}/${encodeURIComponent(itemId)}`)).data;
+export const ingestTelegramChannel = async (channelHandle, count = 5) => 
+  (await api.post(`/sources/telegram-ingest?channel_handle=${encodeURIComponent(channelHandle)}&count=${count}`)).data;
+export const analyzeCustomTextNLU = async (text) => (await api.post('/sentiment/analyze-text', { text })).data;
+export const fetchPdfReport = async () => (await api.get('/export/pdf-report')).data;
+export const fetchAuditTrail = async () => (await api.get('/audit-trail')).data;
 
 export default api;

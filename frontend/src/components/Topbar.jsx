@@ -1,6 +1,6 @@
 import React from 'react';
-import { Search, Camera, Calendar, Filter, Play, Radio, RefreshCw } from 'lucide-react';
-import { triggerSeedDemo } from '../services/api';
+import { Search, Camera, Calendar, Filter, Play, Radio, RefreshCw, FileText, Download } from 'lucide-react';
+import { triggerSeedDemo, fetchPdfReport } from '../services/api';
 
 export const Topbar = ({ 
   selectedPlatform, 
@@ -13,6 +13,7 @@ export const Topbar = ({
   onRefreshData
 }) => {
   const [seeding, setSeeding] = React.useState(false);
+  const [exporting, setExporting] = React.useState(false);
 
   const handleReSeed = async () => {
     setSeeding(true);
@@ -23,6 +24,26 @@ export const Topbar = ({
       console.error(err);
     } finally {
       setSeeding(false);
+    }
+  };
+
+  const handleExportPdfReport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetchPdfReport();
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(res.report_html);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      }
+    } catch (err) {
+      console.error('Failed to export PDF report', err);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -57,6 +78,16 @@ export const Topbar = ({
 
       {/* Controls Right */}
       <div className="flex items-center space-x-3">
+        {/* PDF Executive Report Export */}
+        <button
+          onClick={handleExportPdfReport}
+          disabled={exporting}
+          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 text-xs font-semibold shadow-inner transition-all"
+        >
+          <Download className="w-3.5 h-3.5 text-purple-400" />
+          <span>{exporting ? 'Generating PDF...' : 'Export PDF Report'}</span>
+        </button>
+
         {/* Re-seed demo button */}
         <button
           onClick={handleReSeed}
