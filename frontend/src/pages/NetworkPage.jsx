@@ -141,7 +141,19 @@ export const NetworkPage = () => {
     cyRef.current = cy;
 
     return () => {
-      if (cyRef.current) cyRef.current.destroy();
+      if (cyRef.current) {
+        try {
+          if (typeof cyRef.current.removeAllListeners === 'function') {
+            cyRef.current.removeAllListeners();
+          }
+          if (typeof cyRef.current.destroy === 'function' && (!cyRef.current.isDestroyed || !cyRef.current.isDestroyed())) {
+            cyRef.current.destroy();
+          }
+        } catch (err) {
+          // Safe unmount handling
+        }
+        cyRef.current = null;
+      }
     };
   }, [networkData]);
 

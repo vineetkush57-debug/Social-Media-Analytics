@@ -20,17 +20,28 @@ from backend.app.services.propagation_service import trace_information_propagati
 from backend.app.services.demo_seeder import seed_database
 from backend.app.services.entity_service import generate_entity_intelligence
 from backend.app.services.ingestion_service import process_posts_ingestion
+from backend.app.config import get_system_mode_status, is_valid_key, X_BEARER_TOKEN
+from backend.app.services.live_api_service import ingest_live_tweets_to_db
 
 router = APIRouter(prefix="/api")
+
+@router.get("/config/status")
+def get_config_status():
+    """Returns whether system is running in LIVE API MODE or DEMO MODE, and active API tokens."""
+    return get_system_mode_status()
 
 @router.get("/health")
 def health_check(db: Session = Depends(get_db)):
     posts_count = db.query(Post).count()
+    sys_mode = get_system_mode_status()
     return {
         "status": "online",
         "system": "SIH 2026 Social Media Analytics Platform",
         "database": "connected",
-        "demo_mode": True,
+        "source_mode": sys_mode["mode"],
+        "active_sources": sys_mode["active_sources"],
+        "has_live_x_api": sys_mode["has_x_api"],
+        "has_live_instagram_api": sys_mode["has_instagram_api"],
         "total_posts_indexed": posts_count
     }
 
