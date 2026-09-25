@@ -3,6 +3,7 @@ import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { SihDemoModal } from './components/SihDemoModal';
 import { GlobalSearchModal } from './components/GlobalSearchModal';
+import { ScreenshotUpload } from './components/ScreenshotUpload';
 
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -26,6 +27,7 @@ export function App() {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSihDemoOpen, setIsSihDemoOpen] = useState(false);
+  const [isImageUploadOpen, setIsImageUploadOpen] = useState(false);
 
   // Keyboard shortcut for command-K search
   React.useEffect(() => {
@@ -59,7 +61,14 @@ export function App() {
   const renderContent = () => {
     switch (currentRoute) {
       case '/':
-        return <LandingPage key={refreshKey} navigateTo={navigateTo} onStartSihDemo={() => setIsSihDemoOpen(true)} />;
+        return (
+          <LandingPage
+            key={refreshKey}
+            navigateTo={navigateTo}
+            onStartSihDemo={() => setIsSihDemoOpen(true)}
+            onOpenImageUpload={() => setIsImageUploadOpen(true)}
+          />
+        );
       case '/dashboard':
         return <DashboardPage key={refreshKey} navigateTo={navigateTo} />;
       case '/entity':
@@ -98,7 +107,11 @@ export function App() {
   if (currentRoute === '/') {
     return (
       <>
-        <LandingPage navigateTo={navigateTo} onStartSihDemo={() => setIsSihDemoOpen(true)} />
+        <LandingPage
+          navigateTo={navigateTo}
+          onStartSihDemo={() => setIsSihDemoOpen(true)}
+          onOpenImageUpload={() => setIsImageUploadOpen(true)}
+        />
         <SihDemoModal
           isOpen={isSihDemoOpen}
           onClose={() => setIsSihDemoOpen(false)}
@@ -109,6 +122,12 @@ export function App() {
           onClose={() => setIsSearchOpen(false)}
           navigateTo={navigateTo}
           onSearchEntity={handleSearchEntity}
+          onOpenImageUpload={() => setIsImageUploadOpen(true)}
+        />
+        <ScreenshotUpload
+          isOpen={isImageUploadOpen}
+          onClose={() => setIsImageUploadOpen(false)}
+          onAnalyzeScreenshot={(entity) => handleSearchEntity(entity)}
         />
       </>
     );
@@ -127,6 +146,7 @@ export function App() {
         dateRange={dateRange}
         setDateRange={setDateRange}
         onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenImageUpload={() => setIsImageUploadOpen(true)}
         onStartSihDemo={() => setIsSihDemoOpen(true)}
         onRefreshData={handleGlobalRefresh}
       />
@@ -147,6 +167,12 @@ export function App() {
         onClose={() => setIsSearchOpen(false)}
         navigateTo={navigateTo}
         onSearchEntity={handleSearchEntity}
+        onOpenImageUpload={() => setIsImageUploadOpen(true)}
+      />
+      <ScreenshotUpload
+        isOpen={isImageUploadOpen}
+        onClose={() => setIsImageUploadOpen(false)}
+        onAnalyzeScreenshot={(entity) => handleSearchEntity(entity)}
       />
     </div>
   );

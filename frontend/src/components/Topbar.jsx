@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Calendar, Filter, Play, Radio, RefreshCw } from 'lucide-react';
+import { Search, Camera, Calendar, Filter, Play, Radio, RefreshCw } from 'lucide-react';
 import { triggerSeedDemo } from '../services/api';
 
 export const Topbar = ({ 
@@ -8,6 +8,7 @@ export const Topbar = ({
   dateRange, 
   setDateRange, 
   onOpenSearch, 
+  onOpenImageUpload,
   onStartSihDemo,
   onRefreshData
 }) => {
@@ -26,16 +27,25 @@ export const Topbar = ({
   };
 
   return (
-    <header className="h-16 bg-dark-900/80 backdrop-blur-xl border-b border-white/[0.08] fixed top-0 right-0 left-64 z-20 flex items-center justify-between px-6">
-      {/* Search Bar Trigger */}
-      <div className="flex items-center space-x-4">
+    <header className="h-16 bg-dark-900/80 backdrop-blur-xl border-b border-white/[0.08] fixed top-0 right-0 left-64 z-20 flex items-center justify-between px-6 select-none">
+      {/* Search Bar & Screenshot Button */}
+      <div className="flex items-center space-x-3">
         <button
           onClick={onOpenSearch}
-          className="flex items-center space-x-2.5 px-3.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.08] text-slate-400 hover:text-slate-200 hover:border-white/20 transition-all text-xs w-64 text-left"
+          className="flex items-center space-x-2.5 px-3.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-slate-400 hover:text-slate-200 hover:border-white/20 transition-all text-xs w-64 text-left"
         >
           <Search className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Search posts, topics, users...</span>
+          <span>Search person, brand, hashtag...</span>
           <kbd className="ml-auto text-[10px] bg-white/[0.06] px-1.5 py-0.5 rounded text-slate-500 font-mono">⌘K</kbd>
+        </button>
+
+        {/* Real Upload Screenshot Trigger */}
+        <button
+          onClick={onOpenImageUpload}
+          className="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 text-xs font-semibold shadow-inner transition-all group"
+        >
+          <Camera className="w-3.5 h-3.5 text-indigo-400 group-hover:scale-110 transition-transform" />
+          <span>Upload Screenshot</span>
         </button>
 
         {/* Demo Mode Badge */}
@@ -91,7 +101,7 @@ export const Topbar = ({
         {/* SIH DEMO Scenario Button */}
         <button
           onClick={onStartSihDemo}
-          className="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition-all transform hover:scale-[1.02]"
+          className="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition-all transform hover:scale-[1.02]"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
           <span>SIH DEMO SCENARIO</span>

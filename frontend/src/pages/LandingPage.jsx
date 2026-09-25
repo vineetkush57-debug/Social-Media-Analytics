@@ -1,8 +1,8 @@
 import React from 'react';
 import { HeroCanvas } from '../components/HeroCanvas';
-import { Sparkles, ArrowRight, Play, Radio, Shield, Network, TrendingUp, Smile, Users, GitBranch } from 'lucide-react';
+import { Sparkles, ArrowRight, Play, Radio, Camera, Smile, Users, TrendingUp, Network, GitBranch } from 'lucide-react';
 
-export const LandingPage = ({ navigateTo, onStartSihDemo }) => {
+export const LandingPage = ({ navigateTo, onStartSihDemo, onOpenImageUpload }) => {
   return (
     <div className="min-h-screen bg-dark-950 text-slate-100 relative overflow-hidden select-none">
       {/* Navbar */}
@@ -19,15 +19,22 @@ export const LandingPage = ({ navigateTo, onStartSihDemo }) => {
 
         <div className="flex items-center space-x-4">
           <button
+            onClick={onOpenImageUpload}
+            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 text-xs font-semibold text-indigo-300 transition-all"
+          >
+            <Camera className="w-4 h-4 text-indigo-400" />
+            <span>UPLOAD SCREENSHOT</span>
+          </button>
+          <button
             onClick={onStartSihDemo}
-            className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-white/[0.05] border border-white/10 hover:bg-white/10 text-xs font-semibold text-slate-200 transition-all"
+            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-white/[0.05] border border-white/10 hover:bg-white/10 text-xs font-semibold text-slate-200 transition-all"
           >
             <Play className="w-3.5 h-3.5 text-indigo-400 fill-current" />
             <span>SIH LIVE DEMO</span>
           </button>
           <button
             onClick={() => navigateTo('/dashboard')}
-            className="flex items-center space-x-2 px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all"
+            className="flex items-center space-x-2 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all"
           >
             <span>LAUNCH PLATFORM</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -55,7 +62,7 @@ export const LandingPage = ({ navigateTo, onStartSihDemo }) => {
           </h1>
 
           <p className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto font-normal leading-relaxed">
-            Understand conversations, detect emerging trends, map influence, and uncover how information moves across social networks in real-time.
+            Understand conversations, detect emerging trends, map influence, and analyze social media screenshots with OCR & Entity AI.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
@@ -65,6 +72,14 @@ export const LandingPage = ({ navigateTo, onStartSihDemo }) => {
             >
               <span>EXPLORE INTELLIGENCE</span>
               <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={onOpenImageUpload}
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-indigo-600/20 border border-indigo-500/40 hover:bg-indigo-600/30 text-indigo-200 text-sm font-bold tracking-wider uppercase transition-all flex items-center justify-center space-x-3 shadow-inner"
+            >
+              <Camera className="w-4 h-4 text-indigo-400" />
+              <span>📷 UPLOAD SCREENSHOT</span>
             </button>
 
             <button
@@ -81,13 +96,13 @@ export const LandingPage = ({ navigateTo, onStartSihDemo }) => {
       {/* Storytelling Section 1 */}
       <section className="py-24 border-t border-white/[0.08] bg-dark-900/40 relative">
         <div className="max-w-6xl mx-auto px-8 text-center space-y-4">
-          <span className="text-xs font-mono uppercase tracking-widest text-indigo-400">01 / UNIFIED SIGNAL INGESTION</span>
+          <span className="text-xs font-mono uppercase tracking-widest text-indigo-400">01 / UNIFIED SIGNAL & SCREENSHOT INGESTION</span>
           <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
-            Millions of conversations.<br />
+            Text Search & Screenshot Intelligence.<br />
             <span className="gradient-text-cyan">One intelligence layer.</span>
           </h2>
           <p className="text-slate-400 max-w-xl mx-auto text-sm leading-relaxed">
-            Continuous ingestion from X, Telegram, Instagram, Reddit, and YouTube distilled into structural insights using advanced natural language understanding.
+            Continuous ingestion from X, Telegram, Instagram, Reddit, YouTube, and screenshot OCR uploads distilled into unified Entity Intelligence.
           </p>
         </div>
       </section>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, TrendingUp, Users, FileText, ArrowRight, Sparkles } from 'lucide-react';
+import { Search, Camera, X, TrendingUp, Users, FileText, ArrowRight, Sparkles } from 'lucide-react';
 import { globalSearch } from '../services/api';
 
-export const GlobalSearchModal = ({ isOpen, onClose, navigateTo, onSearchEntity }) => {
+export const GlobalSearchModal = ({ isOpen, onClose, navigateTo, onSearchEntity, onOpenImageUpload }) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -44,11 +44,16 @@ export const GlobalSearchModal = ({ isOpen, onClose, navigateTo, onSearchEntity 
     }
   };
 
+  const handleTriggerUpload = () => {
+    onClose();
+    if (onOpenImageUpload) onOpenImageUpload();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
       <div className="bg-dark-900 border border-white/10 rounded-2xl max-w-2xl w-full p-4 shadow-2xl relative overflow-hidden">
         {/* Form Input Bar */}
-        <form onSubmit={handleFormSubmit} className="flex items-center space-x-3 px-3 py-2 border-b border-white/10 mb-4">
+        <form onSubmit={handleFormSubmit} className="flex items-center space-x-3 px-3 py-2 border-b border-white/10 mb-3">
           <Search className="w-5 h-5 text-indigo-400" />
           <input
             type="text"
@@ -68,8 +73,21 @@ export const GlobalSearchModal = ({ isOpen, onClose, navigateTo, onSearchEntity 
           </button>
         </form>
 
+        {/* Real Screenshot Upload Trigger Bar */}
+        <div className="flex items-center justify-between px-2 pb-3 mb-3 border-b border-white/5 text-xs">
+          <span className="text-slate-400">Or analyze from screenshot:</span>
+          <button
+            onClick={handleTriggerUpload}
+            type="button"
+            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-semibold transition-all group"
+          >
+            <Camera className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
+            <span>📷 Upload Screenshot</span>
+          </button>
+        </div>
+
         {/* Results Container */}
-        <div className="max-h-[60vh] overflow-y-auto space-y-4 px-2">
+        <div className="max-h-[55vh] overflow-y-auto space-y-4 px-2">
           {query.trim() && (
             <div
               onClick={() => handleOpenEntityDashboard(query.trim())}
