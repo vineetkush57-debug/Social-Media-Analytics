@@ -46,6 +46,8 @@ def health_check(db: Session = Depends(get_db)):
         "active_sources": sys_mode["active_sources"],
         "has_live_x_api": sys_mode["has_x_api"],
         "has_live_instagram_api": sys_mode["has_instagram_api"],
+        "has_live_telegram_api": sys_mode["has_telegram_api"],
+        "has_live_openai_api": sys_mode["has_openai_api"],
         "total_posts_indexed": posts_count
     }
 

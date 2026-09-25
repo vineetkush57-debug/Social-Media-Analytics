@@ -4,6 +4,7 @@ from typing import Dict, Any
 from sqlalchemy.orm import Session
 from backend.app.database.models import User, Post, SentimentResult, TrendMetric
 from backend.app.services.ai_sentiment import analyze_post_sentiment
+from backend.app.config import TELEGRAM_API_ID, TELEGRAM_API_HASH, is_valid_key
 
 SAMPLE_TELEGRAM_MESSAGES = [
     "NEW RESEARCH DISPATCH: Breakthrough zero-shot evaluation on multi-agent collaboration frameworks released today.",
@@ -17,10 +18,14 @@ def ingest_telegram_channel(channel_handle: str, db: Session, count: int = 5) ->
     """
     Simulates / Executes Telethon public Telegram channel ingestion.
     Fetches public messages from @channel_handle, extracts dispatches, runs sentiment AI, and saves to database.
+    Checks TELEGRAM_API_ID & TELEGRAM_API_HASH from backend/.env.
     """
     channel_clean = channel_handle.strip()
     if not channel_clean.startswith("@"):
         channel_clean = f"@{channel_clean}"
+
+    has_live_keys = is_valid_key(TELEGRAM_API_ID) or is_valid_key(TELEGRAM_API_HASH)
+    ingestion_mode = "LIVE TELEGRAM API CONNECTOR" if has_live_keys else "TELEGRAM OSINT SIMULATED CONNECTOR"
 
     # Resolve or create Telegram User / Channel node
     handle_name = channel_clean.replace("@", "")
@@ -58,7 +63,7 @@ def ingest_telegram_channel(channel_handle: str, db: Session, count: int = 5) ->
             entity_name=channel_clean,
             entity_type="Telegram Channel",
             hashtags="#Telegram #OSINT #Security",
-            is_demo=False
+            is_demo=not has_live_keys
         )
         db.add(post)
         db.flush()
@@ -85,7 +90,10 @@ def ingest_telegram_channel(channel_handle: str, db: Session, count: int = 5) ->
         "status": "success",
         "channel": channel_clean,
         "platform": "Telegram",
+        "ingestion_mode": ingestion_mode,
+        "has_live_credentials": has_live_keys,
         "messages_ingested": len(inserted_posts),
         "post_ids": inserted_posts,
-        "message": f"Successfully pulled {len(inserted_posts)} live dispatches from Telegram channel {channel_clean}."
+        "message": f"[{ingestion_mode}] Successfully pulled {len(inserted_posts)} dispatches from Telegram channel {channel_clean}."
     }
+
