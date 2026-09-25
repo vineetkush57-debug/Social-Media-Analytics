@@ -3,8 +3,9 @@ from typing import Dict, Any, List
 from backend.app.services.ai_sentiment import analyze_post_sentiment
 
 KNOWN_ENTITIES = [
-    "Virat Kohli", "Kohli", "Rohit Sharma", "Puma", "Nike", "Apple", "Tesla", "Google",
-    "Microsoft", "SIH 2026", "IPL", "T20 World Cup", "AI Agents", "Cybersecurity Protocol",
+    "Virat Kohli", "Kohli", "Sri Lanka", "England", "Sri Lanka vs England", "rvcjinsta", "RVCJ",
+    "Cricket", "Rohit Sharma", "Puma", "Nike", "Apple", "Tesla", "Google", "Microsoft",
+    "SIH 2026", "IPL", "T20 World Cup", "AI Agents", "Cybersecurity Protocol",
     "AlexVanguard", "ElenaData", "TechResearchLab", "DevPulse_HQ", "CyberSentinel", "AIVisualizer"
 ]
 
