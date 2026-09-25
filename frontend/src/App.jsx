@@ -93,7 +93,7 @@ export function App() {
       case '/propagation':
         return <PropagationPage key={refreshKey} />;
       case '/timeline':
-        return <TimelinePage key={refreshKey} />;
+        return <TimelinePage key={refreshKey} navigateTo={navigateTo} />;
       case '/alerts':
         return <AlertsPage key={refreshKey} />;
       case '/architecture':

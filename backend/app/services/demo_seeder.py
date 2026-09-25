@@ -17,15 +17,30 @@ DEMO_USERS_DATA = [
     {"handle": "FutureTechBytes", "name": "David Miller", "platform": "YouTube", "follower_count": 890000, "verified": True, "influence_score": 96.1, "community_id": 2, "bio": "Weekly tech breakdowns & deep dives."},
     {"handle": "CodeArtisan", "name": "Rahul Sharma", "platform": "Reddit", "follower_count": 64000, "verified": False, "influence_score": 73.8, "community_id": 3, "bio": "Full-stack developer building open source tools."},
     {"handle": "CryptoQuantum", "name": "SatoshiN", "platform": "Telegram", "follower_count": 118000, "verified": False, "influence_score": 77.2, "community_id": 5, "bio": "Quantum cryptography and decentralized consensus."},
-    {"handle": "EthicsInAI", "name": "Dr. Sarah Chen", "platform": "X", "follower_count": 175000, "verified": True, "influence_score": 84.9, "community_id": 1, "bio": "Research fellow in AI alignment & safety policies."}
+    {"handle": "EthicsInAI", "name": "Dr. Sarah Chen", "platform": "X", "follower_count": 175000, "verified": True, "influence_score": 84.9, "community_id": 1, "bio": "Research fellow in AI alignment & safety policies."},
+    {"handle": "imVkohli", "name": "Virat Kohli", "platform": "X", "follower_count": 62000000, "verified": True, "influence_score": 99.8, "community_id": 4, "bio": "Athlete | Indian Cricketer | Puma Brand Ambassador."}
 ]
 
 DEMO_POSTS_DATA = [
     {
+        "user_handle": "imVkohli",
+        "platform": "X",
+        "topic_name": "Cricket & Sports",
+        "entity_name": "Virat Kohli",
+        "entity_type": "Person",
+        "content": "Grateful for the incredible support from fans tonight! Focused on the next match and putting our best foot forward. #ViratKohli #TeamIndia #Cricket",
+        "likes_count": 245000,
+        "replies_count": 18200,
+        "shares_count": 42000,
+        "views_count": 4800000
+    },
+    {
         "user_handle": "AlexVanguard",
         "platform": "X",
         "topic_name": "AI Autonomous Agents",
-        "content": "Autonomous multi-agent orchestration frameworks are rewriting software development. The performance jumps we are seeing this week are unprecedented. #AiAgents #Tech2026",
+        "entity_name": "AI Agents",
+        "entity_type": "Technology",
+        "content": "Autonomous multi-agent orchestration frameworks are rewriting software development. The performance jumps we are seeing this week are unprecedented. @DevPulse_HQ #AiAgents #Tech2026",
         "likes_count": 4210,
         "replies_count": 530,
         "shares_count": 1420,
@@ -35,7 +50,9 @@ DEMO_POSTS_DATA = [
         "user_handle": "ElenaData",
         "platform": "X",
         "topic_name": "AI Autonomous Agents",
-        "content": "Benchmarking autonomous reasoning across 50,000 tasks. The confidence score calibration in these modern multi-agent systems is genuinely impressive. #AI #NLP",
+        "entity_name": "AI Agents",
+        "entity_type": "Technology",
+        "content": "Benchmarking autonomous reasoning across 50,000 tasks. The confidence score calibration in these modern multi-agent systems is genuinely impressive. @AlexVanguard #AI #NLP",
         "likes_count": 2840,
         "replies_count": 190,
         "shares_count": 680,
@@ -45,6 +62,8 @@ DEMO_POSTS_DATA = [
         "user_handle": "TechResearchLab",
         "platform": "Telegram",
         "topic_name": "AI Autonomous Agents",
+        "entity_name": "AI Research",
+        "entity_type": "Topic",
         "content": "NEW REPORT: Open-weight agent models demonstrate zero-shot task completion rates rising from 42% to 89% in controlled benchmark environments.",
         "likes_count": 3900,
         "replies_count": 410,
@@ -55,7 +74,9 @@ DEMO_POSTS_DATA = [
         "user_handle": "DevPulse_HQ",
         "platform": "X",
         "topic_name": "AI Autonomous Agents",
-        "content": "Major shift in tech stack adoption: 68% of enterprise engineering teams report integrating autonomous agent workflows in Q3 2026. #DevOps #SoftwareEngineering",
+        "entity_name": "DevOps",
+        "entity_type": "Domain",
+        "content": "Major shift in tech stack adoption: 68% of enterprise engineering teams report integrating autonomous agent workflows in Q3 2026. @AlexVanguard #DevOps #SoftwareEngineering",
         "likes_count": 5120,
         "replies_count": 640,
         "shares_count": 1890,
@@ -65,6 +86,8 @@ DEMO_POSTS_DATA = [
         "user_handle": "CyberSentinel",
         "platform": "Reddit",
         "topic_name": "Cybersecurity Protocol Alpha",
+        "entity_name": "Cybersecurity",
+        "entity_type": "Domain",
         "content": "Detailed vulnerability breakdown of legacy authentication protocols under quantum-resistant encryption audits. Everyone needs to patch immediately.",
         "likes_count": 1850,
         "replies_count": 310,
@@ -75,7 +98,9 @@ DEMO_POSTS_DATA = [
         "user_handle": "AIVisualizer",
         "platform": "Instagram",
         "topic_name": "AI Autonomous Agents",
-        "content": "Visualizing how autonomous agents plan, delegate, and execute complex code refactoring across microservices! Swipe for the complete flow diagram 📊✨",
+        "entity_name": "AI Agents",
+        "entity_type": "Technology",
+        "content": "Visualizing how autonomous agents plan, delegate, and execute complex code refactoring across microservices! Swipe for the complete flow diagram 📊✨ @imVkohli",
         "likes_count": 8940,
         "replies_count": 480,
         "shares_count": 2100,
@@ -85,6 +110,8 @@ DEMO_POSTS_DATA = [
         "user_handle": "FutureTechBytes",
         "platform": "YouTube",
         "topic_name": "AI Autonomous Agents",
+        "entity_name": "AI Research",
+        "entity_type": "Topic",
         "content": "The Future of Autonomous AI Systems: How 2026 AI Agents Are Replacing Static Automation [Deep Dive Video & Full Source Code]",
         "likes_count": 15400,
         "replies_count": 1280,
@@ -95,7 +122,9 @@ DEMO_POSTS_DATA = [
         "user_handle": "EthicsInAI",
         "platform": "X",
         "topic_name": "AI Autonomous Agents",
-        "content": "While autonomous agent velocity is staggering, guardrails and human oversight remain essential. We cannot trade auditability for speed. #AIEthics",
+        "entity_name": "AI Ethics",
+        "entity_type": "Topic",
+        "content": "While autonomous agent velocity is staggering, guardrails and human oversight remain essential. We cannot trade auditability for speed. @ElenaData #AIEthics",
         "likes_count": 3100,
         "replies_count": 420,
         "shares_count": 910,
@@ -105,6 +134,8 @@ DEMO_POSTS_DATA = [
         "user_handle": "CryptoQuantum",
         "platform": "Telegram",
         "topic_name": "Quantum Computing Paradigm",
+        "entity_name": "Quantum",
+        "entity_type": "Technology",
         "content": "Quantum supremacy claims verified in key distribution protocols. Zero-knowledge cryptography is officially essential.",
         "likes_count": 1450,
         "replies_count": 180,
@@ -115,6 +146,8 @@ DEMO_POSTS_DATA = [
         "user_handle": "CodeArtisan",
         "platform": "Reddit",
         "topic_name": "Green Tech Energy Grid",
+        "entity_name": "CleanTech",
+        "entity_type": "Domain",
         "content": "Smart grid analytics powered by edge AI reduced local datacenter energy waste by 34%. Here is the open-source hardware schematic.",
         "likes_count": 2100,
         "replies_count": 240,
@@ -143,24 +176,35 @@ def seed_database(db: Session) -> bool:
         # 1. Seed Users
         user_objects = {}
         for udata in DEMO_USERS_DATA:
-            user = User(
-                handle=udata["handle"],
-                name=udata["name"],
-                platform=udata["platform"],
-                follower_count=udata["follower_count"],
-                verified=udata["verified"],
-                influence_score=udata["influence_score"],
-                community_id=udata["community_id"],
-                bio=udata["bio"],
-                avatar_url=f"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-            )
-            db.add(user)
+            user = db.query(User).filter(User.handle == udata["handle"]).first()
+            if not user:
+                user = User(
+                    handle=udata["handle"],
+                    name=udata["name"],
+                    platform=udata["platform"],
+                    follower_count=udata["follower_count"],
+                    verified=udata["verified"],
+                    influence_score=udata["influence_score"],
+                    community_id=udata["community_id"],
+                    bio=udata["bio"],
+                    avatar_url=f"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+                )
+                db.add(user)
+            else:
+                user.name = udata["name"]
+                user.platform = udata["platform"]
+                user.follower_count = udata["follower_count"]
+                user.verified = udata["verified"]
+                user.influence_score = udata["influence_score"]
+                user.community_id = udata["community_id"]
+                user.bio = udata["bio"]
             db.flush()
             user_objects[udata["handle"]] = user
 
         # 2. Seed Topics
         topics_data = [
             {"name": "AI Autonomous Agents", "category": "AI / ML", "keywords": '["agent", "autonomous", "orchestration", "llm", "benchmark"]'},
+            {"name": "Cricket & Sports", "category": "Sports", "keywords": '["cricket", "kohli", "teamindia", "ipl", "match"]'},
             {"name": "Cybersecurity Protocol Alpha", "category": "Security", "keywords": '["encryption", "vulnerability", "patch", "zero-trust", "quantum"]'},
             {"name": "Green Tech Energy Grid", "category": "CleanTech", "keywords": '["edge-ai", "energy", "grid", "sustainability", "hardware"]'},
             {"name": "Quantum Computing Paradigm", "category": "Hardware", "keywords": '["quantum", "cryptography", "zero-knowledge", "supremacy"]'},
@@ -172,9 +216,10 @@ def seed_database(db: Session) -> bool:
 
         # 3. Seed Posts & Sentiment
         now = datetime.datetime.utcnow()
+        post_objects = []
         for idx, pdata in enumerate(DEMO_POSTS_DATA):
             u_obj = user_objects.get(pdata["user_handle"])
-            time_offset = datetime.timedelta(hours=idx * 1.5)
+            time_offset = datetime.timedelta(hours=idx * 2)
             post = Post(
                 user_id=u_obj.id if u_obj else 1,
                 platform=pdata["platform"],
@@ -185,10 +230,14 @@ def seed_database(db: Session) -> bool:
                 shares_count=pdata["shares_count"],
                 views_count=pdata["views_count"],
                 topic_name=pdata["topic_name"],
+                entity_name=pdata.get("entity_name"),
+                entity_type=pdata.get("entity_type"),
+                hashtags="#Cricket #ViratKohli #AI" if "Kohli" in pdata["content"] else "#AI #Tech2026",
                 is_demo=True
             )
             db.add(post)
             db.flush()
+            post_objects.append(post)
 
             # Analyze sentiment and store
             sent_analysis = analyze_post_sentiment(pdata["content"])
@@ -227,25 +276,28 @@ def seed_database(db: Session) -> bool:
         # 4. Seed Demographics
         demo_records = [
             # Age
-            ("age_group", "18–24", 42.0, 18900),
-            ("age_group", "25–34", 35.0, 15750),
-            ("age_group", "35–44", 15.0, 6750),
-            ("age_group", "45+", 8.0, 3600),
+            ("age_group", "18-24", 32.0, 14400),
+            ("age_group", "25-34", 28.0, 12600),
+            ("age_group", "35-44", 18.0, 8100),
+            ("age_group", "45-54", 12.0, 5400),
+            ("age_group", "55+", 10.0, 4500),
             # Geo
-            ("geographic_region", "North America", 38.5, 17325),
-            ("geographic_region", "Asia-Pacific (India/SG)", 32.0, 14400),
-            ("geographic_region", "Europe", 21.5, 9675),
-            ("geographic_region", "Latin America", 8.0, 3600),
+            ("geographic_region", "Central India", 31.0, 13950),
+            ("geographic_region", "North India", 24.0, 10800),
+            ("geographic_region", "West India", 19.0, 8550),
+            ("geographic_region", "South India", 16.0, 7200),
+            ("geographic_region", "East India", 10.0, 4500),
             # Language
-            ("language", "English", 68.0, 30600),
-            ("language", "Spanish", 14.0, 6300),
-            ("language", "Hindi", 11.0, 4950),
-            ("language", "German", 7.0, 3150),
+            ("language", "English", 38.0, 17100),
+            ("language", "Hindi", 34.0, 15300),
+            ("language", "Hinglish", 18.0, 8100),
+            ("language", "Other", 10.0, 4500),
             # Interests
-            ("professional_interest", "Software & AI Engineering", 44.0, 19800),
-            ("professional_interest", "Cybersecurity & IT Ops", 24.0, 10800),
-            ("professional_interest", "Product & Design", 18.0, 8100),
-            ("professional_interest", "Academic & Research", 14.0, 6300),
+            ("professional_interest", "Technology", 30.0, 13500),
+            ("professional_interest", "Sports", 24.0, 10800),
+            ("professional_interest", "Business", 18.0, 8100),
+            ("professional_interest", "Education", 16.0, 7200),
+            ("professional_interest", "Entertainment", 12.0, 5400),
         ]
         for cat, lbl, pct, cnt in demo_records:
             d_res = DemographicResult(category_type=cat, label=lbl, percentage=pct, count=cnt)
@@ -253,6 +305,7 @@ def seed_database(db: Session) -> bool:
 
         # 5. Seed Trend Metrics
         trends_data = [
+            {"topic_name": "Virat Kohli", "mentions_count": 8940, "growth_rate": 310.5, "sentiment_score": 0.88, "status": "trending"},
             {"topic_name": "AI Autonomous Agents", "mentions_count": 4280, "growth_rate": 240.5, "sentiment_score": 0.78, "status": "trending"},
             {"topic_name": "Cybersecurity Protocol Alpha", "mentions_count": 2150, "growth_rate": 115.2, "sentiment_score": -0.32, "status": "rising"},
             {"topic_name": "Green Tech Energy Grid", "mentions_count": 1840, "growth_rate": 84.0, "sentiment_score": 0.65, "status": "rising"},
@@ -269,21 +322,43 @@ def seed_database(db: Session) -> bool:
             )
             db.add(t_metric)
 
-        # 6. Seed Network Edges (Interactions between key users)
+        # 6. Seed Interactions & Network Edges
         u_list = list(user_objects.values())
-        edge_types = ["mention", "reply", "retweet", "share"]
+        interaction_types = ["mention", "reply", "share", "interaction"]
         for i in range(len(u_list)):
-            for j in range(i + 1, min(i + 4, len(u_list))):
-                edge = NetworkEdge(
-                    source_user_id=u_list[i].id,
-                    target_user_id=u_list[j].id,
-                    edge_type=random.choice(edge_types),
-                    weight=random.randint(1, 12)
-                )
-                db.add(edge)
+            for j in range(len(u_list)):
+                if i != j and (i + j) % 2 == 0:
+                    src = u_list[i]
+                    tgt = u_list[j]
+                    itype = random.choice(interaction_types)
+                    edge_type = "mention" if itype == "mention" else ("reply" if itype == "reply" else "retweet")
+                    
+                    # Add Interaction
+                    db.add(Interaction(
+                        source_user_id=src.id,
+                        target_user_id=tgt.id,
+                        post_id=post_objects[0].id if post_objects else None,
+                        interaction_type=itype,
+                        timestamp=now - datetime.timedelta(hours=random.randint(1, 48))
+                    ))
+
+                    # Add NetworkEdge
+                    db.add(NetworkEdge(
+                        source_user_id=src.id,
+                        target_user_id=tgt.id,
+                        edge_type=edge_type,
+                        weight=random.randint(1, 15)
+                    ))
 
         # 7. Seed Alerts
         alerts_list = [
+            {
+                "title": "Viral Engagement Spike: Virat Kohli",
+                "severity": "critical",
+                "platform": "X",
+                "topic_name": "Virat Kohli",
+                "description": "Mentions & retweets jumped +310% in the last 2 hours following live match performance."
+            },
             {
                 "title": "Rapid Trend Spike: AI Autonomous Agents",
                 "severity": "critical",
@@ -304,13 +379,6 @@ def seed_database(db: Session) -> bool:
                 "platform": "YouTube",
                 "topic_name": "AI Autonomous Agents",
                 "description": "@FutureTechBytes published deep-dive reaching 520,000 views within 3 hours."
-            },
-            {
-                "title": "Viral Cascade Detected across Telegram",
-                "severity": "critical",
-                "platform": "Telegram",
-                "topic_name": "AI Autonomous Agents",
-                "description": "Whitepaper shared across 42 encrypted research channels simultaneously."
             }
         ]
         for al in alerts_list:

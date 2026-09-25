@@ -27,8 +27,8 @@ export const fetchNetwork = async () => (await api.get('/network')).data;
 export const fetchNetworkInfluencers = async () => (await api.get('/network/influencers')).data;
 export const fetchPropagation = async (topic = 'AI Autonomous Agents') => 
   (await api.get(`/propagation?topic=${encodeURIComponent(topic)}`)).data;
-export const fetchTimeline = async (topic = '', platform = '') => 
-  (await api.get(`/timeline?topic=${encodeURIComponent(topic)}&platform=${platform}`)).data;
+export const fetchTimeline = async (topic = '', platform = 'all', sentiment = 'all') => 
+  (await api.get(`/timeline?topic=${encodeURIComponent(topic)}&platform=${platform}&sentiment=${sentiment}`)).data;
 export const fetchAlerts = async (severity = 'all') => (await api.get(`/alerts?severity=${severity}`)).data;
 export const triggerSeedDemo = async () => (await api.post('/demo/seed')).data;
 export const globalSearch = async (query) => (await api.get(`/search?query=${encodeURIComponent(query)}`)).data;

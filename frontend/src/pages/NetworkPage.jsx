@@ -32,6 +32,11 @@ export const NetworkPage = () => {
   useEffect(() => {
     if (!networkData || !containerRef.current) return;
 
+    const nodes = Array.isArray(networkData.nodes) ? networkData.nodes : [];
+    const edges = Array.isArray(networkData.edges) ? networkData.edges : [];
+
+    if (nodes.length === 0) return;
+
     // Convert API nodes/edges to Cytoscape format
     const cyElements = [];
 
@@ -43,10 +48,10 @@ export const NetworkPage = () => {
       5: '#F43F5E', // rose
     };
 
-    networkData.nodes.forEach((n) => {
+    nodes.forEach((n) => {
       cyElements.push({
         data: {
-          id: n.id,
+          id: String(n.id),
           label: `@${n.label}`,
           followers: n.followers,
           influence: n.influence_score,
@@ -55,17 +60,17 @@ export const NetworkPage = () => {
           betweenness: n.betweenness_centrality,
           pagerank: n.pagerank,
           color: communityColors[n.community] || '#6366F1',
-          size: Math.max(24, Math.min(60, n.pagerank * 4.5)),
+          size: Math.max(24, Math.min(60, (n.pagerank || 1) * 4.5)),
         },
       });
     });
 
-    networkData.edges.forEach((e, idx) => {
+    edges.forEach((e, idx) => {
       cyElements.push({
         data: {
           id: `e_${idx}`,
-          source: e.source,
-          target: e.target,
+          source: String(e.source),
+          target: String(e.target),
           type: e.type,
           weight: e.weight,
         },
@@ -158,6 +163,8 @@ export const NetworkPage = () => {
     }
   };
 
+  const hasNodes = Array.isArray(networkData?.nodes) && networkData.nodes.length > 0;
+
   return (
     <div className="p-8 space-y-6 max-w-[1600px] mx-auto select-none relative">
       {/* Header */}
@@ -184,7 +191,7 @@ export const NetworkPage = () => {
           <div className="h-6 w-[1px] bg-white/10" />
           <div>
             <span className="text-slate-400 block text-[10px] uppercase">TOP HUB USER</span>
-            <span className="font-bold text-emerald-400 font-mono text-sm">@{networkData?.top_hub_user}</span>
+            <span className="font-bold text-emerald-400 font-mono text-sm">@{networkData?.top_hub_user || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -194,42 +201,54 @@ export const NetworkPage = () => {
         {/* Cytoscape Canvas View */}
         <div className="lg:col-span-3 glass-panel rounded-2xl border border-white/10 relative h-[650px] overflow-hidden">
           {/* Controls Bar Overlay */}
-          <div className="absolute top-4 left-4 z-10 flex items-center space-x-2">
-            <form onSubmit={handleSearchNode} className="flex items-center">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Find handle..."
-                className="px-3 py-1.5 rounded-lg bg-dark-900/90 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none w-36"
-              />
-              <button type="submit" className="p-1.5 ml-1 rounded-lg bg-indigo-600 text-white text-xs">
-                <Search className="w-3.5 h-3.5" />
+          {hasNodes && (
+            <div className="absolute top-4 left-4 z-10 flex items-center space-x-2">
+              <form onSubmit={handleSearchNode} className="flex items-center">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Find handle..."
+                  className="px-3 py-1.5 rounded-lg bg-dark-900/90 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none w-36"
+                />
+                <button type="submit" className="p-1.5 ml-1 rounded-lg bg-indigo-600 text-white text-xs">
+                  <Search className="w-3.5 h-3.5" />
+                </button>
+              </form>
+
+              <button
+                onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 1.2)}
+                className="p-2 rounded-lg bg-dark-900/90 border border-white/10 text-slate-300 hover:text-white text-xs"
+              >
+                <ZoomIn className="w-4 h-4" />
               </button>
-            </form>
+              <button
+                onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 0.8)}
+                className="p-2 rounded-lg bg-dark-900/90 border border-white/10 text-slate-300 hover:text-white text-xs"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => cyRef.current?.fit()}
+                className="p-2 rounded-lg bg-dark-900/90 border border-white/10 text-slate-300 hover:text-white text-xs"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
-            <button
-              onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 1.2)}
-              className="p-2 rounded-lg bg-dark-900/90 border border-white/10 text-slate-300 hover:text-white text-xs"
-            >
-              <ZoomIn className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => cyRef.current?.zoom(cyRef.current.zoom() * 0.8)}
-              className="p-2 rounded-lg bg-dark-900/90 border border-white/10 text-slate-300 hover:text-white text-xs"
-            >
-              <ZoomOut className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => cyRef.current?.fit()}
-              className="p-2 rounded-lg bg-dark-900/90 border border-white/10 text-slate-300 hover:text-white text-xs"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Cytoscape Mount Container */}
-          <div ref={containerRef} className="w-full h-full" />
+          {/* Cytoscape Mount Container OR Empty State */}
+          {hasNodes ? (
+            <div ref={containerRef} className="w-full h-full" />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8 space-y-3">
+              <Network className="w-12 h-12 text-slate-500" />
+              <h3 className="text-base font-bold text-white uppercase">Network Data Unavailable</h3>
+              <p className="text-xs text-slate-400 max-w-md">
+                Network visualization requires interaction, mention, reply, or share relationships. Seed demo data or upload a dataset containing mention connections to populate network graph topology.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Selected Node Details Drawer Panel */}

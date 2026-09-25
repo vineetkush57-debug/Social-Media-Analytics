@@ -226,21 +226,52 @@ def get_demographic_analytics(db: Session = Depends(get_db)):
     languages = {}
     professional_interests = {}
 
+    age_distribution = []
+    geographic_reach = []
+    language_distribution = []
+    interest_domains = []
+
     for r in rows:
         if r.category_type == "age_group":
             age_brackets[r.label] = r.percentage
+            age_distribution.append({"label": r.label, "value": r.percentage, "count": r.count})
         elif r.category_type == "geographic_region":
             geographic_distribution[r.label] = r.percentage
+            geographic_reach.append({"label": r.label, "value": r.percentage, "count": r.count})
         elif r.category_type == "language":
             languages[r.label] = r.percentage
+            language_distribution.append({"label": r.label, "value": r.percentage, "count": r.count})
         elif r.category_type == "professional_interest":
             professional_interests[r.label] = r.percentage
+            interest_domains.append({"label": r.label, "value": r.percentage, "count": r.count})
+
+    # Fallback to defaults if DB rows were empty
+    if not age_brackets:
+        age_brackets = {"18-24": 32.0, "25-34": 28.0, "35-44": 18.0, "45-54": 12.0, "55+": 10.0}
+        age_distribution = [{"label": k, "value": v} for k, v in age_brackets.items()]
+    if not geographic_distribution:
+        geographic_distribution = {"Central India": 31.0, "North India": 24.0, "West India": 19.0, "South India": 16.0, "East India": 10.0}
+        geographic_reach = [{"label": k, "value": v} for k, v in geographic_distribution.items()]
+    if not languages:
+        languages = {"English": 38.0, "Hindi": 34.0, "Hinglish": 18.0, "Other": 10.0}
+        language_distribution = [{"label": k, "value": v} for k, v in languages.items()]
+    if not professional_interests:
+        professional_interests = {"Technology": 30.0, "Sports": 24.0, "Business": 18.0, "Education": 16.0, "Entertainment": 12.0}
+        interest_domains = [{"label": k, "value": v} for k, v in professional_interests.items()]
+
+    has_uploaded = db.query(Post).filter(Post.is_demo == False).count() > 0
 
     return {
         "age_brackets": age_brackets,
         "geographic_distribution": geographic_distribution,
         "languages": languages,
         "professional_interests": professional_interests,
+        "age_distribution": age_distribution,
+        "geographic_reach": geographic_reach,
+        "language_distribution": language_distribution,
+        "interest_domains": interest_domains,
+        "total_audience": 45000,
+        "source_mode": "UPLOADED DATA" if has_uploaded else "DEMO",
         "disclaimer": "Demographic values are aggregated estimates based on available public/demo signals."
     }
 
@@ -254,7 +285,7 @@ def get_trends(db: Session = Depends(get_db)):
     for m in metrics:
         topics_list.append({
             "topic": m.topic_name,
-            "category": "Technology" if "AI" in m.topic_name else ("Security" if "Cyber" in m.topic_name else "Innovation"),
+            "category": "Sports" if "Kohli" in m.topic_name or "Cricket" in m.topic_name else ("Technology" if "AI" in m.topic_name else ("Security" if "Cyber" in m.topic_name else "Innovation")),
             "mentions": m.mentions_count,
             "growth": m.growth_rate,
             "sentiment": "Positive" if m.sentiment_score > 0.2 else ("Negative" if m.sentiment_score < -0.2 else "Neutral"),
@@ -264,11 +295,11 @@ def get_trends(db: Session = Depends(get_db)):
         })
 
     trend_timeline = [
-        {"hour": "06:00", "AI Autonomous Agents": 400, "Cybersecurity Protocol": 200, "Green Tech": 150},
-        {"hour": "09:00", "AI Autonomous Agents": 1200, "Cybersecurity Protocol": 450, "Green Tech": 380},
-        {"hour": "12:00", "AI Autonomous Agents": 2800, "Cybersecurity Protocol": 980, "Green Tech": 720},
-        {"hour": "15:00", "AI Autonomous Agents": 3950, "Cybersecurity Protocol": 1850, "Green Tech": 1400},
-        {"hour": "18:00", "AI Autonomous Agents": 4280, "Cybersecurity Protocol": 2150, "Green Tech": 1840},
+        {"hour": "06:00", "Virat Kohli": 1200, "AI Autonomous Agents": 400, "Cybersecurity Protocol": 200, "Green Tech": 150},
+        {"hour": "09:00", "Virat Kohli": 3400, "AI Autonomous Agents": 1200, "Cybersecurity Protocol": 450, "Green Tech": 380},
+        {"hour": "12:00", "Virat Kohli": 6800, "AI Autonomous Agents": 2800, "Cybersecurity Protocol": 980, "Green Tech": 720},
+        {"hour": "15:00", "Virat Kohli": 8200, "AI Autonomous Agents": 3950, "Cybersecurity Protocol": 1850, "Green Tech": 1400},
+        {"hour": "18:00", "Virat Kohli": 8940, "AI Autonomous Agents": 4280, "Cybersecurity Protocol": 2150, "Green Tech": 1840},
     ]
 
     return {
@@ -306,20 +337,36 @@ def get_propagation_analytics(topic: str = "AI Autonomous Agents"):
     return trace_information_propagation(topic)
 
 @router.get("/timeline")
-def get_timeline_events(topic: Optional[str] = None, platform: Optional[str] = None, db: Session = Depends(get_db)):
-    posts = db.query(Post).order_by(Post.timestamp.desc()).limit(20).all()
+def get_timeline_events(
+    topic: Optional[str] = None,
+    platform: Optional[str] = None,
+    sentiment: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(Post)
+    if platform and platform != "all":
+        query = query.filter(Post.platform == platform)
+    if topic and topic.strip():
+        q_clean = f"%{topic.strip()}%"
+        query = query.filter(Post.topic_name.ilike(q_clean) | Post.content.ilike(q_clean) | Post.entity_name.ilike(q_clean))
+    if sentiment and sentiment != "all":
+        query = query.join(SentimentResult).filter(SentimentResult.sentiment == sentiment)
+
+    posts = query.order_by(Post.timestamp.desc()).limit(30).all()
     events = []
     for idx, p in enumerate(posts):
         events.append({
-            "id": p.id,
-            "timestamp": p.timestamp.strftime("%H:%M UTC"),
-            "topic": p.topic_name or "General AI",
+            "id": str(p.id),
+            "timestamp": p.timestamp.strftime("%Y-%m-%d %H:%M UTC"),
+            "topic": p.topic_name or p.entity_name or "General",
             "platform": p.platform,
             "user_handle": p.user.handle if p.user else "@User",
-            "event_type": "Post Published" if idx % 2 == 0 else "Viral Interaction Spike",
+            "event_type": "Viral Spike" if (p.likes_count > 10000 or idx % 3 == 0) else "Post Published",
             "content": p.content,
             "sentiment": p.sentiment.sentiment if p.sentiment else "positive",
-            "reach": p.views_count or (p.likes_count * 15)
+            "engagement": (p.likes_count + p.replies_count + p.shares_count),
+            "reach": p.views_count or ((p.likes_count or 1) * 15),
+            "description": f"Published on {p.platform} by @{p.user.handle if p.user else 'User'}"
         })
     return events
 
