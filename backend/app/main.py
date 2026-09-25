@@ -39,5 +39,17 @@ app.add_middleware(
 app.include_router(router)
 app.include_router(image_router)
 
+@app.get("/")
+def root_status():
+    return {
+        "status": "online",
+        "service": "SIH 2026 Social Media Analytics Platform API",
+        "message": "FastAPI Backend is running successfully!",
+        "frontend_url": "http://localhost:5173",
+        "documentation": "http://127.0.0.1:8000/docs",
+        "redoc_docs": "http://127.0.0.1:8000/redoc",
+        "health_check": "http://127.0.0.1:8000/api/health"
+    }
+
 if __name__ == "__main__":
     uvicorn.run("backend.app.main:app", host="127.0.0.1", port=8000, reload=True)
