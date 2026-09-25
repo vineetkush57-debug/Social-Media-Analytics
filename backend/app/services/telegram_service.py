@@ -93,6 +93,7 @@ def ingest_telegram_channel(channel_handle: str, db: Session, count: int = 5) ->
         "ingestion_mode": ingestion_mode,
         "has_live_credentials": has_live_keys,
         "messages_ingested": len(inserted_posts),
+        "posts_ingested": len(inserted_posts),
         "post_ids": inserted_posts,
         "message": f"[{ingestion_mode}] Successfully pulled {len(inserted_posts)} dispatches from Telegram channel {channel_clean}."
     }

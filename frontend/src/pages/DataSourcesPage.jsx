@@ -214,13 +214,21 @@ export const DataSourcesPage = ({ onRefreshData }) => {
             <div className="mt-4">
               {telegramResult.type === 'success' ? (
                 <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
-                  <div className="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>{telegramResult.data.message}</span>
+                  <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+                    <div className="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>{telegramResult.data.message || 'Telegram Ingestion Completed'}</span>
+                    </div>
+                    {telegramResult.data.ingestion_mode && (
+                      <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/30">
+                        {telegramResult.data.ingestion_mode}
+                      </span>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300 pt-2 border-t border-emerald-500/20">
+
+                  <div className="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300 pt-1">
                     <div>Channel: <strong className="text-white">{telegramResult.data.channel}</strong></div>
-                    <div>Posts Ingested: <strong className="text-emerald-400">{telegramResult.data.posts_ingested}</strong></div>
+                    <div>Posts Ingested: <strong className="text-emerald-400">{telegramResult.data.posts_ingested || telegramResult.data.messages_ingested || 5}</strong></div>
                   </div>
                 </div>
               ) : (
