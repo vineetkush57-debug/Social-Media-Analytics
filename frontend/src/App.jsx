@@ -81,7 +81,7 @@ export function App() {
           />
         );
       case '/sources':
-        return <DataSourcesPage key={refreshKey} onRefreshData={handleGlobalRefresh} />;
+        return <DataSourcesPage onRefreshData={handleGlobalRefresh} />;
       case '/sentiment':
         return <SentimentPage key={refreshKey} />;
       case '/demographics':

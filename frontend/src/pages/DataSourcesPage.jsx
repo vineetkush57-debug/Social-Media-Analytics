@@ -199,8 +199,9 @@ export const DataSourcesPage = ({ onRefreshData }) => {
                 />
                 <button
                   type="submit"
+                  onClick={handleTelegramIngest}
                   disabled={telegramLoading}
-                  className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-50 flex items-center space-x-2"
+                  className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-cyan-600/30 transition-all disabled:opacity-50 flex items-center space-x-2 cursor-pointer"
                 >
                   <Radio className={`w-4 h-4 ${telegramLoading ? 'animate-pulse' : ''}`} />
                   <span>{telegramLoading ? 'INGESTING...' : 'PULL CHANNEL'}</span>
@@ -213,27 +214,33 @@ export const DataSourcesPage = ({ onRefreshData }) => {
           {telegramResult && (
             <div className="mt-4">
               {telegramResult.type === 'success' ? (
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
-                  <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
-                    <div className="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <div className="p-5 rounded-2xl bg-emerald-950/40 border-2 border-emerald-500/80 shadow-xl shadow-emerald-500/10 space-y-3">
+                  <div className="flex items-center justify-between border-b border-emerald-500/30 pb-3">
+                    <div className="flex items-center space-x-2.5 text-emerald-300 font-extrabold text-sm">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 animate-bounce" />
                       <span>{telegramResult.data.message || 'Telegram Ingestion Completed'}</span>
                     </div>
                     {telegramResult.data.ingestion_mode && (
-                      <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/30">
+                      <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 font-mono text-xs font-extrabold border border-cyan-400/50 shadow-sm">
                         {telegramResult.data.ingestion_mode}
                       </span>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300 pt-1">
-                    <div>Channel: <strong className="text-white">{telegramResult.data.channel}</strong></div>
-                    <div>Posts Ingested: <strong className="text-emerald-400">{telegramResult.data.posts_ingested || telegramResult.data.messages_ingested || 5}</strong></div>
+                  <div className="grid grid-cols-2 gap-3 text-xs font-mono text-slate-200 pt-1">
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-emerald-500/20">
+                      <span className="text-[10px] text-slate-400 block uppercase font-sans">Target Channel</span>
+                      <strong className="text-white text-sm">{telegramResult.data.channel}</strong>
+                    </div>
+                    <div className="bg-black/40 p-2.5 rounded-xl border border-emerald-500/20">
+                      <span className="text-[10px] text-slate-400 block uppercase font-sans">Posts Ingested</span>
+                      <strong className="text-emerald-400 text-sm font-bold">{telegramResult.data.posts_ingested || telegramResult.data.messages_ingested || 5} Posts</strong>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs font-semibold text-rose-300 flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <div className="p-4 rounded-xl bg-rose-500/20 border border-rose-500/50 text-xs font-semibold text-rose-300 flex items-center space-x-2">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-400" />
                   <span>{telegramResult.text}</span>
                 </div>
               )}
