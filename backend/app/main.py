@@ -1,4 +1,12 @@
 import os
+import sys
+from pathlib import Path
+
+# Add project root to sys.path so 'backend.app...' imports work in Vercel serverless environment
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,19 +15,22 @@ from backend.app.api.routes import router
 from backend.app.api.image import router as image_router
 from backend.app.services.demo_seeder import seed_database
 
-# Apply column migrations & create tables
-migrate_db_columns()
-Base.metadata.create_all(bind=engine)
-
-# Auto-seed if database is freshly created
-db = SessionLocal()
+# Apply column migrations & create tables safely
 try:
-    from backend.app.database.models import Post
-    if db.query(Post).count() == 0:
-        print("Empty database detected. Seeding initial SIH 2026 demo dataset...")
-        seed_database(db)
-finally:
-    db.close()
+    migrate_db_columns()
+    Base.metadata.create_all(bind=engine)
+
+    # Auto-seed if database is freshly created
+    db = SessionLocal()
+    try:
+        from backend.app.database.models import Post
+        if db.query(Post).count() == 0:
+            print("Empty database detected. Seeding initial SIH 2026 demo dataset...")
+            seed_database(db)
+    finally:
+        db.close()
+except Exception as err:
+    print(f"Serverless DB init notice: {err}")
 
 app = FastAPI(
     title="SIH 2026 Social Media Analytics Platform API",
