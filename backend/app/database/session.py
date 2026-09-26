@@ -44,7 +44,18 @@ def migrate_db_columns():
         print(f"Migration check warning: {ex}")
 
 def get_db():
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception:
+        pass
     db = SessionLocal()
+    try:
+        from backend.app.database.models import Post
+        if db.query(Post).count() == 0:
+            from backend.app.services.demo_seeder import seed_database
+            seed_database(db)
+    except Exception as e:
+        print(f"[DB Auto-Init Notice]: {e}")
     try:
         yield db
     finally:
